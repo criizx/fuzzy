@@ -24,7 +24,7 @@ async function freePort() {
   let browser;
   try {
     const executable = path.join(temporary, process.platform === 'win32' ? 'lab.exe' : 'lab');
-    const build = spawnSync('go', ['build', '-o', executable, './cmd/app'], { cwd: project, encoding: 'utf8' });
+    const build = spawnSync('go', ['build', '-o', executable, './cmd'], { cwd: project, encoding: 'utf8' });
     assert.equal(build.status, 0, build.stderr || 'go build failed');
     const port = await freePort();
     const origin = `http://127.0.0.1:${port}`;
@@ -62,6 +62,7 @@ async function freePort() {
     let generationRequests = 0;
     page.on('request', request => { if (request.method() === 'POST' && request.url() === `${origin}/generate`) generationRequests++; });
     await page.locator('#alpha-number').fill('0.5');
+    await page.locator('#ctl button').click();
     await intercepted;
     await page.locator('#gen [name=n]').fill('120');
     await page.locator('#gen button').click();
@@ -93,6 +94,7 @@ async function freePort() {
     await page.locator('#gen button').click();
     await generationIntercepted;
     await page.locator('#alpha-number').fill('0.7');
+    await page.locator('#ctl button').click();
     try {
       await delay(450);
       assert.equal(viewRequests, 0, 'View overtook a pending mutation');
@@ -122,21 +124,25 @@ async function freePort() {
     await page.goto(`${origin}/ops`);
     await page.route('**/ops/calc?**', route => route.abort('connectionfailed'));
     await page.locator('[name=mu1]').fill('1');
+    await page.locator('#ops-form button').click();
     await page.waitForFunction(() => document.querySelector('[data-request-error]')?.textContent.includes('Нет связи'));
     assert.equal(await page.locator('#opsview').getAttribute('aria-busy'), 'false');
     const secondFailure = page.waitForEvent('requestfailed', { predicate: request => request.url().startsWith(`${origin}/ops/calc?`) });
     await page.locator('[name=mu1]').fill('1.1');
+    await page.locator('#ops-form button').click();
     await secondFailure;
     await page.waitForFunction(() => document.querySelector('#opsview').getAttribute('aria-busy') === 'false' && !!document.querySelector('[data-request-error]'));
     assert.equal(await page.locator('[data-request-error]').count(), 1);
     await page.unroute('**/ops/calc?**');
     await page.locator('[name=mu1]').fill('0.2');
+    await page.locator('#ops-form button').click();
     await page.waitForFunction(() => !document.querySelector('[data-request-error]') && document.querySelector('#opsview').getAttribute('aria-busy') === 'false');
     console.log('PASS: network error is visible, deduplicated, clears busy state, and recovers');
 
     await page.evaluate(() => { window.htmx.config.timeout = 100; });
     await page.route('**/ops/calc?**', async route => { await delay(500); await route.abort().catch(() => {}); });
     await page.locator('[name=mu1]').fill('0.4');
+    await page.locator('#ops-form button').click();
     await page.waitForFunction(() => document.querySelector('[data-request-error]')?.textContent.includes('вовремя'));
     assert.equal(await page.locator('[data-request-error]').count(), 1);
     assert.equal(await page.locator('#opsview').getAttribute('aria-busy'), 'false');

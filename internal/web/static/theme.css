@@ -1,0 +1,41 @@
+:root {
+  --p-paper: #f3f1eb; --p-white: #ffffff; --p-ink: #20342f; --p-slate: #596860;
+  --p-fog: #e9ecf1; --p-line: #d8ded5; --p-green: #17664f; --p-green-hover: #104c3b;
+  --surface-page: var(--p-paper); --surface-panel: var(--p-white); --surface-input: #ffffff;
+  --surface-soft: #eef3ed; --text-primary: var(--p-ink); --text-secondary: var(--p-slate);
+  --border-default: var(--p-line); --grid-line: var(--p-fog); --action-primary: var(--p-green);
+  --action-hover: var(--p-green-hover); --on-action: #ffffff; --focus-ring: #17664f;
+  --error-text: #a12c32; --error-surface: #fff0ee; --success-text: #17664f; --success-surface: #edf5ee;
+  --k0: #275ebc; --k1: #ac4b28; --k2: #7750a6; --k3: #25777b; --k4: #9c3560;
+  --k5: #756014; --k6: #3f5d9c; --k7: #8c472f; --k8: #58672b; --k9: #615e6a;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-xs: .6875rem; --text-sm: .75rem; --text-label: .8125rem; --text-base: .875rem;
+  --text-md: 1rem; --text-lg: 1.125rem; --text-xl: 1.5rem; --text-stat: 2rem; --text-display: 2.75rem;
+  --leading-body: 1.55; --leading-tight: 1.1; --tracking-label: .08em; --tracking-display: -.035em;
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600;
+  --space-0: 0; --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+  --radius-control: .25rem; --radius-panel: .25rem; --radius-pill: 5rem;
+  --border-width: 1px; --focus-width: 2px; --focus-offset: 3px;
+  --control-height: 2rem; --icon-size: 1.25rem; --logo-size: 2rem; --swatch-size: .5rem;
+  --rail-width: 16rem; --page-max: 100rem; --alpha-input-width: 4.5rem; --data-max-height: 26rem;
+  --plot-large-max: 30rem; --plot-compact-max: 28rem; --skip-offset: -8rem;
+  --stroke-width: 1.8; --stroke-grid: 1; --chart-label-size: 11px; --chart-label-mobile-size: 22px; --chart-dash: 5 4; --chart-dot-dash: 8 3 2 3;
+  --opacity-plot: .9; --opacity-fill: .08; --opacity-disabled: .5;
+  --transition-fast: 140ms ease; --shadow-focus: 0 0 0 var(--focus-width) var(--focus-ring);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-page: #15171b; --surface-panel: #1b1e24; --surface-input: #191c22;
+  --surface-soft: #292e38; --text-primary: #e8ebf1; --text-secondary: #aeb7c7;
+  --border-default: #536078; --grid-line: #303744; --action-primary: #8bd3b7;
+  --action-hover: #b2e7d3; --on-action: #142e23; --focus-ring: #9cbcff;
+  --error-text: #ffb5ad; --error-surface: #402725; --success-text: #beddb3; --success-surface: #243c2e;
+  --k0: #a7d5b8; --k1: #edb084; --k2: #c5b2ec; --k3: #8fcad8; --k4: #e9a4c5;
+  --k5: #d9c583; --k6: #a4bcec; --k7: #dcae9c; --k8: #bdcc8f; --k9: #c6c0d4;
+}
+
+:root { --header-height: 3.25rem; --plot-height: 26rem; --text-title: 1.125rem; --text-ui: .8125rem; --sidebar-bg: #f5f6f8; }
+[data-theme="dark"] { --sidebar-bg: #191c22; }

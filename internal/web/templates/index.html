@@ -1,0 +1,34 @@
+{{define "index"}}<!doctype html>
+<html lang="ru">
+{{template "head" "Эксперимент · Lognormal Lab"}}
+<body hx-target="#view" hx-sync="#view:queue all">
+{{template "nav" "index"}}
+<div class="page-heading"><div><p class="eyebrow">Вычислительная лаборатория / 01</p><h1>От распределения к кластерам</h1><p class="intro">Настройте логнормальную модель, изучите набор и сравните его α-срезы.</p></div><span class="model-badge">ln X ~ N(μ, σ²)</span></div>
+<main id="main" class="workspace experiment-workspace">
+<aside aria-label="Параметры эксперимента"><details class="inspector" open><summary class="inspector-title">Настройка эксперимента</summary><div class="inspector-content">
+  <form id="gen" class="panel" hx-post="/generate" hx-include="#ctl" hx-trigger="submit" hx-indicator="#progress" hx-disabled-elt="find button">
+    <div class="panel-heading"><h2><span class="step-number">01</span> Исходные данные</h2></div>
+    <label>Генерация<select name="mode" id="generation-mode"><option value="clouds"{{if eq .Gen.Mode "clouds"}} selected{{end}}>Группы с шумом</option><option value="random"{{if eq .Gen.Mode "random"}} selected{{end}}>Случайные параметры</option></select></label>
+    <div class="row"><label>Количество<input type="number" name="n" min="100" max="300" value="{{.Gen.N}}" required></label><label id="groups-field">Облаков<input type="number" name="groups" min="1" max="300" value="{{.Gen.Groups}}" required></label></div>
+    <details class="parameter-details" open><summary>Диапазоны и случайность</summary><div class="parameter-content">    <fieldset><legend>μ <span>Среднее ln X</span></legend><div class="row"><label>От<input type="number" name="mulo" step="any" value="{{.Gen.MuLo}}" required></label><label>До<input type="number" name="muhi" step="any" value="{{.Gen.MuHi}}" required></label></div></fieldset>
+    <fieldset><legend>σ <span>Стандартное отклонение ln X</span></legend><div class="row"><label>От<input type="number" name="sigmalo" step="any" min="0" value="{{.Gen.SigmaLo}}" required></label><label>До<input type="number" name="sigmahi" step="any" min="0" value="{{.Gen.SigmaHi}}" required></label></div></fieldset>
+    <div class="row"><label id="noise-field">Шум<input type="number" name="noise" min="0" max="1" step="0.01" value="{{.Gen.Noise}}" required></label><label>Seed<input type="number" name="seed" value="{{.Gen.Seed}}" required></label></div>
+</div></details>
+    <button class="button primary" type="submit">Создать и посмотреть набор</button>
+  </form>
+  <form id="ctl" class="panel control-panel" hx-get="/view" hx-trigger="submit" hx-indicator="#progress">
+    <div class="panel-heading"><h2><span class="step-number">02</span> Расчёт</h2></div>
+    <label for="alpha-range">Уровень α</label>
+    <div class="pair"><input id="alpha-range" aria-describedby="alpha-help" type="range" name="alpha" min="0" max="1" step="0.01" value="{{.Ctl.Alpha}}"><input id="alpha-number" aria-label="Уровень α числом" type="number" min="0" max="1" step="0.01" value="{{.Ctl.Alpha}}"></div>
+    <p id="alpha-help" class="help">0: весь рабочий носитель · 1: мода</p>
+    <label>Метод<select name="algo" id="algorithm"><option value="pam"{{if eq .Ctl.Algo "pam"}} selected{{end}}>k-медоидов · PAM</option><option value="agglo"{{if eq .Ctl.Algo "agglo"}} selected{{end}}>Иерархический · средняя связь</option></select></label>
+    <label id="k-field">Кластеров, k<input type="number" name="k" min="1" max="300" value="{{.Ctl.K}}"></label>
+    <label id="threshold-field">Порог расстояния<input type="number" name="threshold" min="0" step="any" value="{{.Ctl.Threshold}}"></label>
+    <button class="button primary" type="submit">Запустить кластеризацию</button>
+  </form>
+  <details class="panel file-panel"><summary>Сохранение и загрузка</summary><form id="files" hx-indicator="#progress"><label>Имя CSV-файла<input type="text" name="file" value="{{.File}}" required></label><p class="help">Сохранение: data/ · Загрузка: data/input/</p><div class="row"><button class="button secondary" type="button" hx-post="/save" hx-include="#ctl">Сохранить</button><button class="button secondary" type="button" hx-post="/load" hx-include="#ctl">Загрузить</button></div></form></details>
+</div></details></aside>
+<section id="view" class="results" aria-label="Набор и результаты эксперимента" aria-live="polite">{{template "view" .View}}</section>
+</main>
+{{template "footer"}}
+</body></html>{{end}}
