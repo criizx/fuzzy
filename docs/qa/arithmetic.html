@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="ru" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><title>Арифметика · Lognormal Lab</title><style>      .htmx-indicator{opacity:0}      .htmx-request .htmx-indicator{opacity:1; transition: opacity 200ms ease-in;}      .htmx-request.htmx-indicator{opacity:1; transition: opacity 200ms ease-in;}      </style><style>:root {
+  --p-paper: #f6f7f9; --p-white: #ffffff; --p-ink: #202329; --p-slate: #59616e;
+  --p-fog: #e9ecf1; --p-line: #c7cdd6; --p-green: #245bc4; --p-green-hover: #1949a3;
+  --surface-page: var(--p-paper); --surface-panel: var(--p-white); --surface-input: #ffffff;
+  --surface-soft: #eef1f6; --text-primary: var(--p-ink); --text-secondary: var(--p-slate);
+  --border-default: var(--p-line); --grid-line: var(--p-fog); --action-primary: var(--p-green);
+  --action-hover: var(--p-green-hover); --on-action: #ffffff; --focus-ring: #245bc4;
+  --error-text: #a12c32; --error-surface: #fff0ee; --success-text: #245bc4; --success-surface: #edf3fd;
+  --k0: #275ebc; --k1: #ac4b28; --k2: #7750a6; --k3: #25777b; --k4: #9c3560;
+  --k5: #756014; --k6: #3f5d9c; --k7: #8c472f; --k8: #58672b; --k9: #615e6a;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: var(--font-body);
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-xs: .6875rem; --text-sm: .75rem; --text-label: .8125rem; --text-base: .875rem;
+  --text-md: 1rem; --text-lg: 1.125rem; --text-xl: 1.5rem; --text-stat: 2rem; --text-display: 2.75rem;
+  --leading-body: 1.55; --leading-tight: 1.1; --tracking-label: .08em; --tracking-display: -.035em;
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600;
+  --space-0: 0; --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+  --radius-control: .25rem; --radius-panel: .25rem; --radius-pill: 5rem;
+  --border-width: 1px; --focus-width: 2px; --focus-offset: 3px;
+  --control-height: 2rem; --icon-size: 1.25rem; --logo-size: 2rem; --swatch-size: .5rem;
+  --rail-width: 16rem; --page-max: 100rem; --alpha-input-width: 4.5rem; --data-max-height: 26rem;
+  --plot-large-max: 30rem; --plot-compact-max: 28rem; --skip-offset: -8rem;
+  --stroke-width: 1.8; --stroke-grid: 1; --chart-label-size: 11px; --chart-label-mobile-size: 22px; --chart-dash: 5 4; --chart-dot-dash: 8 3 2 3;
+  --opacity-plot: .9; --opacity-fill: .08; --opacity-disabled: .5;
+  --transition-fast: 140ms ease; --shadow-focus: 0 0 0 var(--focus-width) var(--focus-ring);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-page: #15171b; --surface-panel: #1b1e24; --surface-input: #191c22;
+  --surface-soft: #292e38; --text-primary: #e8ebf1; --text-secondary: #aeb7c7;
+  --border-default: #536078; --grid-line: #303744; --action-primary: #9cbcff;
+  --action-hover: #bad0ff; --on-action: #12213c; --focus-ring: #9cbcff;
+  --error-text: #ffb5ad; --error-surface: #402725; --success-text: #beddb3; --success-surface: #243c2e;
+  --k0: #a7d5b8; --k1: #edb084; --k2: #c5b2ec; --k3: #8fcad8; --k4: #e9a4c5;
+  --k5: #d9c583; --k6: #a4bcec; --k7: #dcae9c; --k8: #bdcc8f; --k9: #c6c0d4;
+}
+
+:root { --header-height: 3.25rem; --plot-height: 26rem; --text-title: 1.125rem; --text-ui: .8125rem; --sidebar-bg: #f5f6f8; }
+[data-theme="dark"] { --sidebar-bg: #191c22; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: var(--space-0); background: var(--surface-page); color: var(--text-primary); font: var(--weight-regular) var(--text-base)/var(--leading-body) var(--font-body); }
+button, input, select { font: inherit; }
+a { color: var(--action-primary); }
+:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); }
+.app-header { display: flex; align-items: center; min-block-size: var(--header-height); gap: var(--space-8); padding-inline: var(--space-6); background: var(--surface-panel); border-block-end: var(--border-width) solid var(--border-default); }
+.brand { display: flex; gap: var(--space-2); align-items: center; color: var(--text-primary); font-size: var(--text-base); font-weight: var(--weight-semibold); text-decoration: none; white-space: nowrap; }
+.brand svg { inline-size: var(--icon-size); block-size: var(--icon-size); color: var(--text-secondary); }
+.app-header nav { display: flex; gap: var(--space-6); align-self: stretch; }
+.app-header nav a { display: flex; align-items: center; color: var(--text-secondary); text-decoration: none; border-block-end: var(--focus-width) solid transparent; font-size: var(--text-ui); }
+.app-header nav a.on { color: var(--text-primary); border-color: var(--action-primary); }
+.app-header nav a:hover { color: var(--action-primary); }
+.header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: var(--space-3); }
+.theme-button { display: grid; place-items: center; inline-size: var(--control-height); block-size: var(--control-height); background: transparent; color: var(--text-secondary); border: var(--border-width) solid transparent; border-radius: var(--radius-control); cursor: pointer; }
+.theme-button:hover { background: var(--surface-soft); color: var(--text-primary); }
+.theme-button svg { inline-size: var(--icon-size); block-size: var(--icon-size); }
+.page-heading { display: flex; align-items: baseline; gap: var(--space-4); padding: var(--space-5) var(--space-6); }
+h1 { margin: var(--space-0); font: var(--weight-semibold) var(--text-title)/var(--leading-tight) var(--font-body); letter-spacing: normal; }
+.page-heading > span { color: var(--text-secondary); font-size: var(--text-label); }
+h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: var(--space-0); }
+.workspace { margin-inline: var(--space-6); display: grid; grid-template-columns: minmax(0,1fr) var(--rail-width); grid-template-areas: 'results inspector'; align-items: start; background: var(--surface-panel); border: var(--border-width) solid var(--border-default); }
+aside { grid-area: inspector; min-inline-size: var(--space-0); background: var(--sidebar-bg); border-inline-start: var(--border-width) solid var(--border-default); align-self: stretch; }
+.inspector-title { font-weight: var(--weight-semibold); padding: var(--space-4); border-block-end: var(--border-width) solid var(--border-default); }
+.inspector-content { padding: var(--space-0) var(--space-4); }
+.panel { min-inline-size: var(--space-0); margin: var(--space-0); }
+aside form.panel { display: grid; gap: var(--space-3); padding-block: var(--space-4); border-block-end: var(--border-width) solid var(--border-default); }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-block-end: var(--space-3); }
+aside .panel-heading { margin-block-end: var(--space-1); }
+label { display: grid; gap: var(--space-1); color: var(--text-secondary); font-size: var(--text-label); }
+input, select { min-inline-size: var(--space-0); inline-size: 100%; block-size: var(--control-height); padding: var(--space-1) var(--space-2); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-control); background: var(--surface-input); color: var(--text-primary); font-size: var(--text-label); }
+input:hover, select:hover { border-color: var(--text-secondary); }
+input:focus, select:focus { border-color: var(--focus-ring); }
+input:user-invalid { border-color: var(--error-text); }
+input[type=range] { border: none; padding: var(--space-0); accent-color: var(--action-primary); background: transparent; }
+.pair { display: grid; grid-template-columns: minmax(0,1fr) var(--alpha-input-width); gap: var(--space-3); align-items: center; }
+.row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--space-3); }
+fieldset { min-inline-size: var(--space-0); padding: var(--space-0); margin: var(--space-0); border: none; }
+legend { font-size: var(--text-label); font-weight: var(--weight-medium); padding: var(--space-0); margin-block-end: var(--space-2); }
+legend > span:not(.series-label) { color: var(--text-secondary); font-weight: var(--weight-regular); margin-inline-start: var(--space-2); font-size: var(--text-sm); }
+.help { margin: var(--space-0); color: var(--text-secondary); font-size: var(--text-sm); max-inline-size: 75ch; }
+#alpha-help { margin-block-start: calc(-1 * var(--space-2)); }
+.button { display: inline-flex; justify-content: center; align-items: center; gap: var(--space-2); min-block-size: var(--control-height); padding: var(--space-1) var(--space-3); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-control); font-size: var(--text-label); font-weight: var(--weight-medium); cursor: pointer; }
+.button.primary { background: var(--action-primary); border-color: var(--action-primary); color: var(--on-action); }
+.button.primary:hover, .button.primary:active { background: var(--action-hover); border-color: var(--action-hover); }
+.button.secondary { background: var(--surface-panel); color: var(--text-primary); }
+.button.secondary:hover, .button.secondary:active { background: var(--surface-soft); }
+.button:disabled { opacity: var(--opacity-disabled); cursor: wait; }
+summary { cursor: pointer; min-block-size: var(--control-height); font-size: var(--text-label); }
+.parameter-details summary { color: var(--text-secondary); padding-block: var(--space-1); }
+.parameter-content { display: grid; gap: var(--space-4); padding-block: var(--space-3); }
+.file-panel { padding-block: var(--space-4); }
+.file-panel form { display: grid; gap: var(--space-3); margin-block-start: var(--space-3); }
+.model-note { padding-block: var(--space-4); color: var(--text-secondary); font-size: var(--text-label); }
+.results { grid-area: results; min-inline-size: var(--space-0); }
+.summary-strip { display: flex; gap: var(--space-6); align-items: center; padding: var(--space-4) var(--space-5); border-block-end: var(--border-width) solid var(--border-default); }
+.summary-strip > div { display: flex; align-items: baseline; gap: var(--space-2); }
+.summary-strip span { color: var(--text-secondary); font-size: var(--text-label); }
+.summary-strip strong { font: var(--weight-medium) var(--text-base)/var(--leading-body) var(--font-mono); }
+.plot-workspace { padding: var(--space-0) var(--space-5) var(--space-4); }
+.plot-toolbar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); border-block-end: var(--border-width) solid var(--grid-line); margin-block-end: var(--space-4); }
+.plot-tabs { display: flex; gap: var(--space-5); }
+.plot-tabs button { background: transparent; color: var(--text-secondary); padding: var(--space-3) var(--space-0); border: none; border-block-end: var(--focus-width) solid transparent; cursor: pointer; font-size: var(--text-label); min-block-size: var(--control-height); }
+.plot-tabs button[aria-selected=true] { color: var(--text-primary); border-color: var(--text-primary); }
+.plot-tabs button:hover { color: var(--action-primary); }
+.small-label { font-size: var(--text-sm); color: var(--text-secondary); }
+figure { margin: var(--space-0); }
+svg[role=img] { display: block; inline-size: 100%; block-size: var(--plot-height); }
+#plot-plane svg { max-inline-size: 100%; }
+figcaption { font-size: var(--text-sm); color: var(--text-secondary); margin-block-start: var(--space-3); }
+.grid { stroke: var(--grid-line); stroke-width: var(--stroke-grid); }
+.diag { stroke: var(--text-secondary); stroke-dasharray: var(--chart-dash); }
+.tick, .axis { fill: var(--text-secondary); font-size: var(--chart-label-size); font-family: var(--font-mono); }
+.bar, .dot { fill: currentColor; opacity: var(--opacity-plot); }
+.dot.medoid { stroke: var(--text-primary); stroke-width: var(--stroke-width); }
+.bar:hover, .dot:hover { opacity: 1; stroke: var(--text-primary); }
+.poly { fill: currentColor; fill-opacity: var(--opacity-fill); stroke: currentColor; stroke-width: var(--stroke-width); stroke-linejoin: round; }
+.poly.k1 { stroke-dasharray: var(--chart-dash); }
+.poly.k2 { stroke-dasharray: var(--chart-dot-dash); }
+.k0 { color: var(--k0); } .k1 { color: var(--k1); } .k2 { color: var(--k2); } .k3 { color: var(--k3); } .k4 { color: var(--k4); }
+.k5 { color: var(--k5); } .k6 { color: var(--k6); } .k7 { color: var(--k7); } .k8 { color: var(--k8); } .k9 { color: var(--k9); }
+.swatch { display: inline-block; inline-size: var(--swatch-size); block-size: var(--swatch-size); border-radius: var(--radius-pill); background: currentColor; margin-inline-end: var(--space-2); }
+.series-label { font-family: var(--font-mono); margin-inline-end: var(--space-2); }
+.table-panel { padding: var(--space-4) var(--space-5); border-block-start: var(--border-width) solid var(--border-default); }
+.table-scroll { overflow-x: auto; }
+.data-scroll { max-block-size: var(--data-max-height); }
+table { inline-size: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: var(--text-label); }
+th, td { padding: var(--space-2) var(--space-3); border-block-end: var(--border-width) solid var(--grid-line); text-align: start; vertical-align: middle; }
+thead th { color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-regular); white-space: nowrap; background: var(--surface-soft); }
+tbody th { font-weight: var(--weight-medium); white-space: nowrap; }
+tbody tr:last-child > * { border-block-end: none; }
+tbody tr:hover { background: var(--surface-soft); }
+.mono { font-family: var(--font-mono); }
+.table-panel > .help { margin-block-start: var(--space-3); }
+.data-panel { border-block-start: var(--border-width) solid var(--border-default); padding: var(--space-3) var(--space-5); }
+.data-panel summary { display: flex; align-items: center; gap: var(--space-2); }
+.data-panel summary::before { content: '+'; }
+.data-panel[open] summary::before { content: '−'; }
+.data-panel .small-label { margin-inline-start: auto; }
+.main-plot { padding: var(--space-5); }
+.comparison-grid { display: flex; gap: var(--space-10); padding: var(--space-4) var(--space-5); border-block-start: var(--border-width) solid var(--border-default); }
+.metric { display: flex; align-items: baseline; gap: var(--space-3); }
+.metric p { margin: var(--space-0); font-size: var(--text-label); color: var(--text-secondary); }
+.metric strong { font: var(--weight-medium) var(--text-md)/var(--leading-body) var(--font-mono); }
+.metric > span { display: none; }
+.error, .note { margin: var(--space-3); padding: var(--space-3); border: var(--border-width) solid currentColor; border-radius: var(--radius-control); font-size: var(--text-label); }
+.error { background: var(--error-surface); color: var(--error-text); }
+.note { background: var(--success-surface); color: var(--success-text); }
+.empty-state { padding: var(--space-8); }
+.app-footer { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-6); font-size: var(--text-sm); color: var(--text-secondary); }
+.formula-note { max-inline-size: 75ch; }
+.htmx-indicator { visibility: hidden; font-size: var(--text-sm); color: var(--text-secondary); }
+.htmx-request.htmx-indicator { visibility: visible; }
+.sr-only { position: absolute; inline-size: var(--border-width); block-size: var(--border-width); margin: calc(-1 * var(--border-width)); overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip-link { position: absolute; inset-block-start: var(--skip-offset); inset-inline-start: var(--space-4); background: var(--surface-panel); padding: var(--space-3); z-index: 10; }
+.skip-link:focus { inset-block-start: var(--space-3); }
+@media (max-width: 63.99rem) {
+ .workspace { grid-template-columns: minmax(0,1fr); grid-template-areas: 'inspector' 'results'; }
+ aside { border-inline-start: none; }
+ .inspector-title { background: var(--surface-soft); }
+ .inspector-content { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-5); }
+ .inspector-content .file-panel { grid-column: 1 / -1; }
+ .page-heading { flex-wrap: wrap; gap: var(--space-2); }
+}
+@media (max-width: 47.99rem) {
+ .app-header { flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+ .app-header nav { order: 3; inline-size: 100%; gap: var(--space-5); }
+ .app-header nav a { padding-block: var(--space-2); }
+ .page-heading, .app-footer { padding: var(--space-4); }
+ .workspace { margin-inline: var(--space-3); }
+ .inspector-content { grid-template-columns: minmax(0,1fr); }
+ .summary-strip { gap: var(--space-4); padding: var(--space-3); }
+ .summary-strip > div { gap: var(--space-1); }
+ .plot-workspace, .table-panel, .main-plot, .data-panel { padding-inline: var(--space-3); }
+ svg[role=img] { block-size: auto; min-block-size: var(--space-0); }
+ .tick, .axis { font-size: var(--chart-label-mobile-size); }
+ .plot-toolbar > .small-label { display: none; }
+ .comparison-grid { flex-direction: column; gap: var(--space-3); padding-inline: var(--space-3); }
+ .app-footer { flex-wrap: wrap; }
+ #progress { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style></head>
+<body hx-target="#opsview">
+<a class="skip-link" href="#main">К содержимому</a><header class="app-header"><a class="brand" href="/" aria-label="Lognormal Lab, главная"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 19h18M4 16c2 0 3-11 6-11s3 11 10 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg><span><span>Нечёткие величины</span></span></a><nav aria-label="Разделы лаборатории"><a href="/">Кластеризация</a><a href="/ops" class="on" aria-current="page">Арифметика</a></nav><div class="header-actions"><span id="progress" class="htmx-indicator" role="status">Вычисляем…</span><button type="button" id="theme-toggle" class="theme-button" aria-label="Тёмная тема" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg></button></div></header>
+<div class="page-heading"><h1>Арифметика</h1><span>Логнормальное распределение · μ, σ</span></div>
+<main id="main" class="workspace">
+<aside aria-label="Параметры арифметики"><details class="inspector" open=""><summary class="inspector-title">Параметры операции</summary><div class="inspector-content"><form id="ops-form" class="panel" hx-get="/ops/calc" hx-trigger="input delay:300ms, submit" hx-sync="this:replace" hx-indicator="#progress">
+<div class="panel-heading"><h2>Параметры A и B</h2></div>
+<fieldset><legend><span class="series-label k0">A</span> Первая величина</legend><div class="row"><label>μ<input type="number" name="mu1" step="any" value="0" required="" style=""></label><label>σ<input type="number" name="sigma1" step="any" min="0" value="0.3" required="" style=""></label></div></fieldset>
+<fieldset><legend><span class="series-label k1">B</span> Вторая величина</legend><div class="row"><label>μ<input type="number" name="mu2" step="any" value="0.7" required="" style=""></label><label>σ<input type="number" name="sigma2" step="any" min="0" value="0.4" required="" style=""></label></div></fieldset>
+<label>Операция<select name="op"><option value="add" selected="">+ Сложение</option><option value="sub">− Вычитание</option><option value="mul">× Умножение</option><option value="div">÷ Деление</option></select></label>
+<p class="help">μ может быть отрицательным. σ всегда больше нуля. Результат хранится как набор α-срезов.</p>
+<button class="button primary" type="submit">Рассчитать</button>
+</form><details class="model-note"><summary>Как выполняются операции</summary><p>Арифметика выполняется над α-срезами. Результат может иметь другую форму, чем исходные величины.</p><p>Pos: возможность A ≥ B. Nec: необходимость A ≥ B.</p></details></div></details></aside>
+<section id="opsview" class="results" aria-label="Результат операции" aria-live="polite">
+
+
+<figure class="panel plot-panel main-plot"><div class="panel-heading"><div><h2>Функции принадлежности</h2></div><span class="small-label">μ(x) ∈ [0, 1]</span></div><svg viewBox="0 0 640 320" role="img" aria-label="Функции принадлежности A, B и результата операции">
+  <line class="grid" x1="44.0" x2="44.0" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="44.0" y="286.0" dy="16" text-anchor="middle">0</text><line class="grid" x1="140.7" x2="140.7" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="140.7" y="286.0" dy="16" text-anchor="middle">2</text><line class="grid" x1="237.3" x2="237.3" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="237.3" y="286.0" dy="16" text-anchor="middle">4</text><line class="grid" x1="334.0" x2="334.0" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="334.0" y="286.0" dy="16" text-anchor="middle">7</text><line class="grid" x1="430.7" x2="430.7" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="430.7" y="286.0" dy="16" text-anchor="middle">9</text><line class="grid" x1="527.3" x2="527.3" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="527.3" y="286.0" dy="16" text-anchor="middle">11</text><line class="grid" x1="624.0" x2="624.0" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="624.0" y="286.0" dy="16" text-anchor="middle">13</text>
+  <line class="grid" x1="44.0" x2="624.0" y1="286.0" y2="286.0"></line>
+  <text class="tick" x="44.0" y="286.0" dx="-6" dy="4" text-anchor="end">0.0</text><line class="grid" x1="44.0" x2="624.0" y1="231.2" y2="231.2"></line>
+  <text class="tick" x="44.0" y="231.2" dx="-6" dy="4" text-anchor="end">0.2</text><line class="grid" x1="44.0" x2="624.0" y1="176.4" y2="176.4"></line>
+  <text class="tick" x="44.0" y="176.4" dx="-6" dy="4" text-anchor="end">0.4</text><line class="grid" x1="44.0" x2="624.0" y1="121.6" y2="121.6"></line>
+  <text class="tick" x="44.0" y="121.6" dx="-6" dy="4" text-anchor="end">0.6</text><line class="grid" x1="44.0" x2="624.0" y1="66.8" y2="66.8"></line>
+  <text class="tick" x="44.0" y="66.8" dx="-6" dy="4" text-anchor="end">0.8</text><line class="grid" x1="44.0" x2="624.0" y1="12.0" y2="12.0"></line>
+  <text class="tick" x="44.0" y="12.0" dx="-6" dy="4" text-anchor="end">1.0</text>
+  
+  <polygon class="poly k0" points="70.36,286.00 76.74,279.15 78.16,272.30 79.13,265.45 79.89,258.60 80.55,251.75 81.12,244.90 81.64,238.05 82.13,231.20 82.58,224.35 83.01,217.50 83.42,210.65 83.81,203.80 84.19,196.95 84.56,190.10 84.92,183.25 85.28,176.40 85.63,169.55 85.97,162.70 86.32,155.85 86.66,149.00 87.00,142.15 87.34,135.30 87.69,128.45 88.04,121.60 88.39,114.75 88.74,107.90 89.11,101.05 89.48,94.20 89.86,87.35 90.25,80.50 90.66,73.65 91.09,66.80 91.54,59.95 92.02,53.10 92.54,46.25 93.11,39.40 93.76,32.55 94.53,25.70 95.53,18.85 98.03,12.00 100.70,18.85 101.88,25.70 102.83,32.55 103.67,39.40 104.44,46.25 105.16,53.10 105.84,59.95 106.51,66.80 107.16,73.65 107.79,80.50 108.42,87.35 109.05,94.20 109.67,101.05 110.30,107.90 110.93,114.75 111.56,121.60 112.21,128.45 112.86,135.30 113.53,142.15 114.21,149.00 114.92,155.85 115.64,162.70 116.39,169.55 117.17,176.40 117.98,183.25 118.83,190.10 119.73,196.95 120.68,203.80 121.69,210.65 122.78,217.50 123.97,224.35 125.27,231.20 126.71,238.05 128.35,244.90 130.26,251.75 132.55,258.60 135.44,265.45 139.43,272.30 146.09,279.15 198.29,286.00 "><title>A</title></polygon><polygon class="poly k1" points="72.71,286.00 84.04,279.15 86.78,272.30 88.69,265.45 90.23,258.60 91.56,251.75 92.74,244.90 93.82,238.05 94.83,231.20 95.77,224.35 96.68,217.50 97.55,210.65 98.39,203.80 99.21,196.95 100.01,190.10 100.79,183.25 101.57,176.40 102.33,169.55 103.10,162.70 103.86,155.85 104.62,149.00 105.38,142.15 106.15,135.30 106.92,128.45 107.70,121.60 108.50,114.75 109.31,107.90 110.14,101.05 110.99,94.20 111.87,87.35 112.79,80.50 113.74,73.65 114.74,66.80 115.80,59.95 116.93,53.10 118.16,46.25 119.53,39.40 121.08,32.55 122.93,25.70 125.39,18.85 131.56,12.00 138.32,18.85 141.37,25.70 143.84,32.55 146.02,39.40 148.03,46.25 149.94,53.10 151.76,59.95 153.54,66.80 155.27,73.65 156.99,80.50 158.69,87.35 160.39,94.20 162.10,101.05 163.81,107.90 165.55,114.75 167.30,121.60 169.09,128.45 170.92,135.30 172.79,142.15 174.71,149.00 176.70,155.85 178.75,162.70 180.88,169.55 183.11,176.40 185.44,183.25 187.90,190.10 190.50,196.95 193.27,203.80 196.24,210.65 199.46,217.50 202.97,224.35 206.85,231.20 211.20,238.05 216.17,244.90 221.99,251.75 229.05,258.60 238.09,265.45 250.74,272.30 272.33,279.15 459.17,286.00 "><title>B</title></polygon><polygon class="poly k2" points="83.25,286.00 100.96,279.15 105.12,272.30 108.00,265.45 110.31,258.60 112.28,251.75 114.04,244.90 115.64,238.05 117.13,231.20 118.53,224.35 119.87,217.50 121.14,210.65 122.38,203.80 123.58,196.95 124.75,190.10 125.89,183.25 127.02,176.40 128.14,169.55 129.25,162.70 130.35,155.85 131.46,149.00 132.56,142.15 133.67,135.30 134.79,128.45 135.92,121.60 137.07,114.75 138.23,107.90 139.43,101.05 140.65,94.20 141.91,87.35 143.22,80.50 144.58,73.65 146.01,66.80 147.52,59.95 149.14,53.10 150.89,46.25 152.82,39.40 155.02,32.55 157.64,25.70 161.10,18.85 169.77,12.00 179.19,18.85 183.43,25.70 186.85,32.55 189.87,39.40 192.65,46.25 195.27,53.10 197.78,59.95 200.22,66.80 202.61,73.65 204.96,80.50 207.29,87.35 209.62,94.20 211.95,101.05 214.29,107.90 216.65,114.75 219.05,121.60 221.48,128.45 223.96,135.30 226.50,142.15 229.11,149.00 231.79,155.85 234.57,162.70 237.45,169.55 240.45,176.40 243.60,183.25 246.91,190.10 250.40,196.95 254.13,203.80 258.11,210.65 262.42,217.50 267.11,224.35 272.29,231.20 278.09,238.05 284.70,244.90 292.43,251.75 301.78,258.60 313.71,265.45 330.35,272.30 358.60,279.15 597.64,286.00 "><title>A + B</title></polygon>
+  
+  
+  <text class="axis" x="624.0" y="286.0" dy="30" text-anchor="end">x</text>
+  <text class="axis" x="44.0" y="12.0" dx="4" dy="10">μ</text>
+</svg><figcaption>Сплошная: A · пунктирная: B · штрихпунктирная: результат. Хвосты отсечены при ε = 10⁻⁴.</figcaption></figure>
+<div class="comparison-grid"><article class="panel metric"><p>Возможность A ≥ B</p><strong>0.667</strong><span>Pos · от 0 до 1</span></article><article class="panel metric"><p>Необходимость A ≥ B</p><strong>0.000</strong><span>Nec · от 0 до 1</span></article></div>
+<section class="panel table-panel"><div class="panel-heading"><div><h2>Параметры A и B и результат</h2></div></div><div class="table-scroll"><table><caption class="sr-only">Носители и характеристики нечётких величин</caption><thead><tr><th scope="col">Величина</th><th scope="col">Рабочий носитель</th><th scope="col">Центр тяжести</th><th scope="col">Среднее*</th><th scope="col">Дисперсия*</th></tr></thead><tbody><tr><th scope="row"><i class="swatch k0" aria-hidden="true"></i>A</th><td class="mono">[0.25; 3.31]</td><td class="mono">1.049</td><td class="mono">0.9557</td><td class="mono">0.07983</td></tr><tr><th scope="row"><i class="swatch k1" aria-hidden="true"></i>B</th><td class="mono">[0.31; 9.55]</td><td class="mono">2.196</td><td class="mono">1.857</td><td class="mono">0.5246</td></tr><tr><th scope="row"><i class="swatch k2" aria-hidden="true"></i>A + B</th><td class="mono">[0.56; 12.86]</td><td class="mono">3.244</td><td class="mono">2.813</td><td class="mono">1.014</td></tr></tbody></table></div><p class="help">* Возможностные среднее и дисперсия нечёткой величины. Вычисляются численно, это не моменты исходного распределения.</p></section>
+</section>
+</main><footer class="app-footer"><details><summary>Справка: модель и точность</summary><div class="formula-note"><p>Логнормальная плотность нормирована по максимуму: g(x) = exp(−(ln x − μ + σ²)² / (2σ²)), x &gt; 0. Для конечного носителя используем μ̃(x) = max(0, (g(x) − ε)/(1 − ε)), ε = 10⁻⁴.</p><p>α-срез: [exp(μ − σ² − σ√(−2 ln β)), exp(μ − σ² + σ√(−2 ln β))], β = ε + (1 − ε)α. При α = 1 остаётся мода exp(μ − σ²).</p><p>Арифметика и интегральные характеристики используют 200 шагов по α. ε задаёт уровень относительной плотности, а не вероятность хвоста. Сумма и разность обычно не являются логнормальными величинами.</p></div></details><span>Лабораторная работа</span></footer></body></html>

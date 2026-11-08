@@ -1,0 +1,40 @@
+Checked 71 element-state(s) in docs/qa/clustering.html
+OK: every interactive element passes WCAG AA in default, hover, and focus.
+
+Checked 71 element-state(s) in docs/qa/clustering.html [dark]
+OK: every interactive element passes WCAG AA in default, hover, and focus.
+
+Checked 32 element-state(s) in docs/qa/arithmetic.html
+OK: every interactive element passes WCAG AA in default, hover, and focus.
+
+Checked 32 element-state(s) in docs/qa/arithmetic.html [dark]
+OK: every interactive element passes WCAG AA in default, hover, and focus.
+
+OK   docs/qa/clustering.html — all 1074 text element(s) meet WCAG AA
+
+OK: every rendered text element meets WCAG 2.2 AA.
+
+OK   docs/qa/clustering.html [dark] — all 1074 text element(s) meet WCAG AA
+
+OK: every rendered text element meets WCAG 2.2 AA.
+
+OK   docs/qa/arithmetic.html — all 57 text element(s) meet WCAG AA
+
+OK: every rendered text element meets WCAG 2.2 AA.
+
+OK   docs/qa/arithmetic.html [dark] — all 57 text element(s) meet WCAG AA
+
+OK: every rendered text element meets WCAG 2.2 AA.
+
+
+docs/qa/clustering.html:
+  HIGH  Timid type-scale contrast: biggest heading 18px vs body 13px = 1.4x (premium ≥ ~2.5x). Make display type dramatically bigger and shorter.
+
+(taste is heuristic — a strong signal, not proof. Pair with human visual review.)
+
+
+docs/qa/arithmetic.html:
+  HIGH  Timid type-scale contrast: biggest heading 18px vs body 12px = 1.5x (premium ≥ ~2.5x). Make display type dramatically bigger and shorter.
+
+(taste is heuristic — a strong signal, not proof. Pair with human visual review.)
+

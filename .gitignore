@@ -1,0 +1,6 @@
+data/log.json
+data/*.csv
+/bin/
+
+.DS_Store
+node_modules/
