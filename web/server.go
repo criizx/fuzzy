@@ -111,19 +111,30 @@ func (s *Server) handle(act func(*http.Request) (string, error), page string) ht
 }
 
 func (s *Server) onGenerate(r *http.Request) (string, error) {
-	f := genForm{Mode: r.Form.Get("mode")}
+	f := defaultGen
+	f.Mode = r.Form.Get("mode")
 	var err error
 	for _, p := range []struct {
 		name, label string
 		dst         any
 	}{
-		{"n", "число величин", &f.N}, {"groups", "облаков", &f.Groups},
+		{"n", "число величин", &f.N},
 		{"mulo", "μ от", &f.MuLo}, {"muhi", "μ до", &f.MuHi},
 		{"sigmalo", "σ от", &f.SigmaLo}, {"sigmahi", "σ до", &f.SigmaHi},
-		{"noise", "шум", &f.Noise}, {"seed", "seed", &f.Seed},
+		{"seed", "seed", &f.Seed},
 	} {
 		if e := scan(r.Form.Get(p.name), p.dst); e != nil && err == nil {
 			err = fmt.Errorf("поле «%s»: %w", p.label, e)
+		}
+	}
+	if f.Mode == "clouds" {
+		for _, p := range []struct {
+			name, label string
+			dst         any
+		}{{"groups", "облаков", &f.Groups}, {"noise", "шум", &f.Noise}} {
+			if e := scan(r.Form.Get(p.name), p.dst); e != nil && err == nil {
+				err = fmt.Errorf("поле «%s»: %w", p.label, e)
+			}
 		}
 	}
 	if err != nil {
@@ -135,7 +146,6 @@ func (s *Server) onGenerate(r *http.Request) (string, error) {
 	if err := s.generate(f); err != nil {
 		return "", err
 	}
-	s.genForm = f
 	return fmt.Sprintf("Сгенерировано величин: %d", len(s.items)), nil
 }
 
@@ -159,9 +169,13 @@ func (s *Server) generate(f genForm) error {
 	if err != nil {
 		return err
 	}
+	if err := s.log.Log("генерация", logData); err != nil {
+		return err
+	}
 	s.items = items
+	s.genForm = f
 	s.lastLogged = ""
-	return s.log.Log("генерация", logData)
+	return nil
 }
 
 func (s *Server) onSave(r *http.Request) (string, error) {
@@ -178,9 +192,12 @@ func (s *Server) onLoad(r *http.Request) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if err := s.log.Log("загрузка", map[string]any{"файл": path, "число": len(items)}); err != nil {
+		return "", err
+	}
 	s.items = items
 	s.lastLogged = ""
-	return "Загружено: " + path, s.log.Log("загрузка", map[string]any{"файл": path, "число": len(items)})
+	return "Загружено: " + path, nil
 }
 
 // path приводит имя файла к <dir>/<имя>.csv.
@@ -231,8 +248,10 @@ func (s *Server) cluster(c ctl) (cluster.Result, error) {
 		return res, err
 	}
 	if key := fmt.Sprint(algo, params, len(s.items)); key != s.lastLogged {
+		if err = s.log.Clustering(algo, params, res); err != nil {
+			return res, err
+		}
 		s.lastLogged = key
-		err = s.log.Clustering(algo, params, res)
 	}
 	return res, err
 }

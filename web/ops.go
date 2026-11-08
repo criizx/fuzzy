@@ -121,10 +121,10 @@ func (s *Server) calcOps(f opsForm) (opsView, error) {
 		items, names = append(items, res), append(names, "A "+op.Sym+" B")
 	}
 	if key := fmt.Sprint(f, opErr); key != s.lastOp {
-		s.lastOp = key
 		if err := s.log.Operation(strings.ToLower(op.Label), a, b, result, opErr); err != nil {
 			return v, err
 		}
+		s.lastOp = key
 	}
 	v.Chart = opsChart(items, names)
 	for i, it := range items {

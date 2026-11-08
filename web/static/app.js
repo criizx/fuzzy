@@ -61,23 +61,46 @@
   const syncMode = () => {
     for (const id of ['groups-field', 'noise-field']) {
       const field = document.getElementById(id);
-      if (field) field.hidden = mode.value !== 'clouds';
+      if (!field) continue;
+      const hidden = mode.value !== 'clouds';
+      field.hidden = hidden;
+      for (const input of field.querySelectorAll('input')) input.disabled = hidden;
     }
   };
   mode?.addEventListener('change', syncMode);
   if (mode) syncMode();
+  // A connection that never completes must eventually return control to the user.
+  if (window.htmx) window.htmx.config.timeout = 30000;
+  const resultTarget = event => event.detail.target || document.querySelector('#view, #opsview');
+  const showRequestError = (event, text) => {
+    const target = resultTarget(event);
+    if (!target) return;
+    target.setAttribute('aria-busy', 'false');
+    let message = target.querySelector('[data-request-error]');
+    if (!message) {
+      message = document.createElement('p');
+      message.className = 'error';
+      message.dataset.requestError = '';
+      message.setAttribute('role', 'alert');
+      target.prepend(message);
+    }
+    message.textContent = text;
+  };
   document.body.addEventListener('htmx:beforeRequest', event => {
-    event.detail.target?.setAttribute('aria-busy', 'true');
+    const target = resultTarget(event);
+    target?.querySelector('[data-request-error]')?.remove();
+    target?.setAttribute('aria-busy', 'true');
   });
   document.body.addEventListener('htmx:afterRequest', event => {
-    event.detail.target?.setAttribute('aria-busy', 'false');
+    resultTarget(event)?.setAttribute('aria-busy', 'false');
   });
-  document.body.addEventListener('htmx:responseError', () => {
-    const target = document.querySelector('#view, #opsview');
-    if (!target) return;
-    const message = document.createElement('p');
-    message.className = 'error'; message.setAttribute('role', 'alert');
-    message.textContent = 'Не удалось получить результат. Проверьте, что сервер запущен, и повторите действие.';
-    target.prepend(message);
+  document.body.addEventListener('htmx:responseError', event => {
+    showRequestError(event, 'Сервер не смог выполнить расчёт. Предыдущий результат не обновлён. Повторите действие.');
+  });
+  document.body.addEventListener('htmx:sendError', event => {
+    showRequestError(event, 'Нет связи с сервером. Предыдущий результат не обновлён. Проверьте соединение и повторите действие.');
+  });
+  document.body.addEventListener('htmx:timeout', event => {
+    showRequestError(event, 'Сервер не ответил вовремя. Предыдущий результат не обновлён. Повторите действие.');
   });
 })();

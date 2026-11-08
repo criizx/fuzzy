@@ -41,10 +41,38 @@ func PossibilityGE(a, b core.Number) float64 {
 	return lo
 }
 
-// NecessityGE — степень необходимости Nec(a ≥ b) = 1 - Pos(b ≥ a)
-// (для нормальных величин, h = 1).
+// PossibilityGT — sup_{x>y} min(μa(x), μb(y)). A strict inequality
+// can hold below the height even when the modal points coincide. Return
+// its supremum (not a maximum, which need not exist).
+func PossibilityGT(a, b core.Number) float64 {
+	h := math.Min(a.Height(), b.Height())
+	holds := func(alpha float64) bool {
+		ca, okA := a.AlphaCut(alpha)
+		cb, okB := b.AlphaCut(alpha)
+		return okA && okB && ca.Hi > cb.Lo
+	}
+	if !(h > 0) || !holds(0) {
+		return 0
+	}
+	if holds(h) {
+		return h
+	}
+	lo, hi := 0.0, h
+	for i := 0; i < bisectIter; i++ {
+		mid := (lo + hi) / 2
+		if holds(mid) {
+			lo = mid
+		} else {
+			hi = mid
+		}
+	}
+	return lo
+}
+
+// NecessityGE — Nec(a ≥ b) = 1 - Pos(b > a), for normal numbers.
+// The strict complement matters for crisp numbers and touching supports.
 func NecessityGE(a, b core.Number) float64 {
-	return 1 - PossibilityGE(b, a)
+	return 1 - PossibilityGT(b, a)
 }
 
 // Result — итог сравнения.

@@ -1,12 +1,12 @@
 {{define "index"}}<!doctype html>
 <html lang="ru">
 {{template "head" "Кластеризация · Lognormal Lab"}}
-<body hx-target="#view">
+<body hx-target="#view" hx-sync="#view:queue all">
 {{template "nav" "index"}}
 <div class="page-heading"><h1>Кластеризация</h1><span>Логнормальное распределение · μ, σ</span></div>
 <main id="main" class="workspace">
 <aside aria-label="Параметры эксперимента"><details class="inspector" open><summary class="inspector-title">Параметры эксперимента</summary><div class="inspector-content">
-  <form id="ctl" class="panel control-panel" hx-get="/view" hx-trigger="input delay:250ms" hx-sync="this:replace" hx-indicator="#progress">
+  <form id="ctl" class="panel control-panel" hx-get="/view" hx-trigger="input delay:250ms" hx-indicator="#progress">
     <div class="panel-heading"><h2>Кластеризация</h2></div>
     <label for="alpha-range">Уровень α</label>
     <div class="pair"><input id="alpha-range" aria-describedby="alpha-help" type="range" name="alpha" min="0" max="1" step="0.01" value="{{.Ctl.Alpha}}"><input id="alpha-number" aria-label="Уровень α числом" type="number" min="0" max="1" step="0.01" value="{{.Ctl.Alpha}}"></div>

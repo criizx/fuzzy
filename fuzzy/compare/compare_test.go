@@ -81,3 +81,43 @@ func TestSortMaxMin(t *testing.T) {
 		t.Errorf("empty Max err = %v", err)
 	}
 }
+
+func crisp(t *testing.T, x float64) core.Number {
+	t.Helper()
+	c, err := number.NewCuts([]float64{0, 1}, []core.Interval{{Lo: x, Hi: x}, {Lo: x, Hi: x}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return c
+}
+
+func TestStrictPossibilityAndNecessity(t *testing.T) {
+	zero, one := crisp(t, 0), crisp(t, 1)
+	cases := []struct {
+		name    string
+		a, b    core.Number
+		gt, nec float64
+	}{
+		{"identical crisp", zero, zero, 0, 1},
+		{"ordered crisp", one, zero, 1, 1},
+		{"reverse crisp", zero, one, 0, 0},
+		{"touching supports", u(t, 0, 1), u(t, 1, 2), 0, 0},
+		{"reverse touching supports", u(t, 1, 2), u(t, 0, 1), 1, 1},
+		{"identical continuous", u(t, 0, 1), u(t, 0, 1), 1, 0},
+		{"overlap", u(t, 1, 2), u(t, 1.5, 5.5), 0.125, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := PossibilityGT(c.a, c.b); math.Abs(got-c.gt) > 1e-12 {
+				t.Errorf("PosGT=%g want %g", got, c.gt)
+			}
+			if got := NecessityGE(c.a, c.b); math.Abs(got-c.nec) > 1e-12 {
+				t.Errorf("NecGE=%g want %g", got, c.nec)
+			}
+		})
+	}
+	n, _ := number.NewLogNormal(0, 0.3)
+	if got := PossibilityGT(n, n); math.Abs(got-1) > 1e-12 {
+		t.Fatalf("coincident lognormal modes: strict supremum=%g want 1", got)
+	}
+}
