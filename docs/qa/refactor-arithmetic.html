@@ -1,0 +1,233 @@
+<!DOCTYPE html><html lang="ru" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><title>Арифметика · Lognormal Lab</title><style>      .htmx-indicator{opacity:0}      .htmx-request .htmx-indicator{opacity:1; transition: opacity 200ms ease-in;}      .htmx-request.htmx-indicator{opacity:1; transition: opacity 200ms ease-in;}      </style><style>:root {
+  --p-paper: #f3f1eb; --p-white: #ffffff; --p-ink: #20342f; --p-slate: #596860;
+  --p-fog: #e9ecf1; --p-line: #d8ded5; --p-green: #17664f; --p-green-hover: #104c3b;
+  --surface-page: var(--p-paper); --surface-panel: var(--p-white); --surface-input: #ffffff;
+  --surface-soft: #eef3ed; --text-primary: var(--p-ink); --text-secondary: var(--p-slate);
+  --border-default: var(--p-line); --grid-line: var(--p-fog); --action-primary: var(--p-green);
+  --action-hover: var(--p-green-hover); --on-action: #ffffff; --focus-ring: #17664f;
+  --error-text: #a12c32; --error-surface: #fff0ee; --success-text: #17664f; --success-surface: #edf5ee;
+  --k0: #275ebc; --k1: #ac4b28; --k2: #7750a6; --k3: #25777b; --k4: #9c3560;
+  --k5: #756014; --k6: #3f5d9c; --k7: #8c472f; --k8: #58672b; --k9: #615e6a;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-xs: .6875rem; --text-sm: .75rem; --text-label: .8125rem; --text-base: .875rem;
+  --text-md: 1rem; --text-lg: 1.125rem; --text-xl: 1.5rem; --text-stat: 2rem; --text-display: 2.75rem;
+  --leading-body: 1.55; --leading-tight: 1.1; --tracking-label: .08em; --tracking-display: -.035em;
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600;
+  --space-0: 0; --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+  --radius-control: .25rem; --radius-panel: .25rem; --radius-pill: 5rem;
+  --border-width: 1px; --focus-width: 2px; --focus-offset: 3px;
+  --control-height: 2rem; --icon-size: 1.25rem; --logo-size: 2rem; --swatch-size: .5rem;
+  --rail-width: 16rem; --page-max: 100rem; --alpha-input-width: 4.5rem; --data-max-height: 26rem;
+  --plot-large-max: 30rem; --plot-compact-max: 28rem; --skip-offset: -8rem;
+  --stroke-width: 1.8; --stroke-grid: 1; --chart-label-size: 11px; --chart-label-mobile-size: 22px; --chart-dash: 5 4; --chart-dot-dash: 8 3 2 3;
+  --opacity-plot: .9; --opacity-fill: .08; --opacity-disabled: .5;
+  --transition-fast: 140ms ease; --shadow-focus: 0 0 0 var(--focus-width) var(--focus-ring);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-page: #15171b; --surface-panel: #1b1e24; --surface-input: #191c22;
+  --surface-soft: #292e38; --text-primary: #e8ebf1; --text-secondary: #aeb7c7;
+  --border-default: #536078; --grid-line: #303744; --action-primary: #8bd3b7;
+  --action-hover: #b2e7d3; --on-action: #142e23; --focus-ring: #9cbcff;
+  --error-text: #ffb5ad; --error-surface: #402725; --success-text: #beddb3; --success-surface: #243c2e;
+  --k0: #a7d5b8; --k1: #edb084; --k2: #c5b2ec; --k3: #8fcad8; --k4: #e9a4c5;
+  --k5: #d9c583; --k6: #a4bcec; --k7: #dcae9c; --k8: #bdcc8f; --k9: #c6c0d4;
+}
+
+:root { --header-height: 3.25rem; --plot-height: 26rem; --text-title: 1.125rem; --text-ui: .8125rem; --sidebar-bg: #f5f6f8; }
+[data-theme="dark"] { --sidebar-bg: #191c22; }
+* { box-sizing: border-box; }
+[hidden] { display:none !important; }
+body { margin:0; background:var(--surface-page); color:var(--text-primary); font:400 15px/1.6 var(--font-body); }
+button,input,select { font:inherit; }
+a { color:var(--action-primary); }
+:focus-visible { outline:3px solid var(--focus-ring); outline-offset:3px; }
+.app-header { display:flex; align-items:center; gap:3rem; min-height:76px; padding:0 max(24px,calc((100vw - 1360px)/2)); background:var(--surface-panel); border-bottom:1px solid var(--border-default); }
+.brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text-primary); font-weight:700; letter-spacing:-.02em; font-size:20px; white-space:nowrap; }
+.brand svg { width:32px; height:32px; color:var(--action-primary); }
+.app-header nav { display:flex; align-self:stretch; gap:28px; }
+.app-header nav a { display:flex; align-items:center; text-decoration:none; color:var(--text-secondary); border-bottom:3px solid transparent; }
+.app-header nav .on { color:var(--action-primary); border-color:var(--action-primary); font-weight:600; }
+.header-actions { display:flex; align-items:center; gap:12px; margin-left:auto; }
+.theme-button { width:42px; height:42px; border:1px solid var(--border-default); border-radius:50%; background:var(--surface-panel); color:var(--text-primary); cursor:pointer; display:grid; place-items:center; }
+.theme-button svg { width:20px; height:20px; }
+.page-heading { max-width:1408px; margin:0 auto; padding:42px 24px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+h1 { font-family:var(--font-display); font-size:clamp(27px,3vw,42px); line-height:1.15; font-weight:500; letter-spacing:-.035em; margin:8px 0 14px; }
+h2 { font-size:16px; line-height:1.4; margin:0; font-weight:650; }
+.eyebrow { margin:0; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--action-primary); font-weight:700; }
+.intro { margin:0; color:var(--text-secondary); max-width:65ch; }
+.model-badge { padding:12px 18px; border:1px solid var(--border-default); border-radius:40px; font:14px var(--font-mono); white-space:nowrap; background:var(--surface-panel); }
+.workspace { display:grid; grid-template-columns:320px minmax(0,1fr); gap:24px; max-width:1408px; padding:0 24px; margin:0 auto; align-items:start; }
+.experiment-workspace { grid-template-columns:minmax(0,1fr); }
+aside { min-width:0; }
+.inspector { background:var(--surface-panel); border:1px solid var(--border-default); border-radius:16px; overflow:hidden; }
+.inspector-title { padding:16px 24px; font-size:13px; font-weight:650; color:var(--text-secondary); border-bottom:1px solid var(--border-default); }
+.inspector-content { padding:24px; }
+.experiment-workspace .inspector-content { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:24px 40px; }
+.panel { min-width:0; margin:0; }
+form.panel { display:grid; gap:14px; }
+.panel-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.panel-heading h2 { display:flex; gap:10px; align-items:center; }
+.step-number { display:inline-grid; place-items:center; width:30px; height:30px; border-radius:9px; background:var(--surface-soft); color:var(--action-primary); font:600 12px var(--font-mono); flex-shrink:0; }
+.control-panel { padding-left:32px; border-left:1px solid var(--border-default); align-content:start; }
+label { display:grid; gap:5px; font-size:13px; color:var(--text-secondary); }
+input,select { min-width:0; width:100%; height:42px; padding:8px 12px; border:1px solid var(--border-default); border-radius:8px; color:var(--text-primary); background:var(--surface-input); }
+input:hover,select:hover { border-color:var(--text-secondary); }
+input:user-invalid { border-color:var(--error-text); }
+input[type=range] { padding:0; border:none; accent-color:var(--action-primary); }
+.row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+.pair { display:grid; grid-template-columns:minmax(0,1fr) 84px; align-items:center; gap:16px; }
+fieldset { min-width:0; margin:0; padding:0; border:0; }
+legend { font-size:13px; margin-bottom:8px; }
+legend span:not(.series-label) { color:var(--text-secondary); font-size:12px; margin-left:8px; }
+.help { margin:0; font-size:12px; color:var(--text-secondary); max-width:85ch; }
+.button { min-height:42px; padding:9px 16px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--border-default); border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+.primary { color:var(--on-action); background:var(--action-primary); border-color:var(--action-primary); }
+.primary:hover { background:var(--action-hover); }
+.secondary { color:var(--text-primary); background:var(--surface-panel); }
+.secondary:hover { background:var(--surface-soft); }
+button:disabled { opacity:.55; cursor:wait; }
+summary { cursor:pointer; min-height:32px; font-size:13px; }
+.parameter-details { border-top:1px solid var(--border-default); padding-top:12px; }
+.parameter-content { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:12px; }
+.parameter-content > .row { grid-column:1/-1; }
+.file-panel { grid-column:1/-1; border-top:1px solid var(--border-default); padding-top:16px; }
+.file-panel form { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:end; padding-top:12px; }
+.model-note { margin-top:20px; font-size:13px; color:var(--text-secondary); }
+.results { min-width:0; border:1px solid var(--border-default); border-radius:16px; overflow:hidden; background:var(--surface-panel); }
+.summary-strip { display:flex; align-items:center; flex-wrap:wrap; gap:20px 36px; padding:20px 24px; background:var(--surface-soft); border-bottom:1px solid var(--border-default); }
+.summary-strip > div { display:flex; align-items:baseline; gap:10px; }
+.summary-strip span { font-size:12px; color:var(--text-secondary); }
+.summary-strip strong { font:500 16px var(--font-mono); }
+.result-heading { display:flex; gap:12px; align-items:center; padding:24px; }
+.result-heading .help { margin-top:4px; }
+.preview-grid { display:grid; grid-template-columns:1fr 1fr; }
+.preview-grid > figure+figure { border-left:1px solid var(--border-default); }
+figure { margin:0; }
+.main-plot { padding:24px; }
+svg[role=img] { display:block; width:100%; height:auto; min-width:0; }
+figcaption { font-size:12px; color:var(--text-secondary); margin-top:12px; }
+.plot-workspace { padding:0 24px 24px; }
+.plot-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:1px solid var(--border-default); margin-bottom:20px; }
+.plot-tabs { display:flex; gap:8px; }
+.plot-tabs button { border:0; border-bottom:3px solid transparent; padding:12px 16px; color:var(--text-secondary); background:transparent; font-size:13px; cursor:pointer; }
+.plot-tabs [aria-selected=true] { color:var(--action-primary); border-color:var(--action-primary); background:var(--surface-soft); }
+.small-label { font-size:12px; color:var(--text-secondary); }
+.grid { stroke:var(--grid-line); stroke-width:1; }
+.diag { stroke:var(--text-secondary); stroke-dasharray:5 4; }
+.tick,.axis { fill:var(--text-secondary); font-size:11px; font-family:var(--font-mono); }
+.bar,.dot { fill:currentColor; opacity:.85; }
+.dot.medoid { stroke:var(--text-primary); stroke-width:2; }
+.bar:hover,.dot:hover { opacity:1; stroke:var(--text-primary); }
+.poly { fill:currentColor; fill-opacity:.06; stroke:currentColor; stroke-width:1.8; stroke-linejoin:round; }
+.poly.k1 { stroke-dasharray:5 4; }
+.poly.k2 { stroke-dasharray:8 3 2 3; }
+.k0 { color:var(--k0); } .k1 { color:var(--k1); } .k2 { color:var(--k2); } .k3 { color:var(--k3); } .k4 { color:var(--k4); } .k5 { color:var(--k5); } .k6 { color:var(--k6); } .k7 { color:var(--k7); } .k8 { color:var(--k8); } .k9 { color:var(--k9); }
+.swatch { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; background:currentColor; }
+.series-label,.mono { font-family:var(--font-mono); }
+.table-panel,.data-panel { padding:20px 24px; border-top:1px solid var(--border-default); }
+.table-scroll { overflow-x:auto; max-width:100%; }
+.data-scroll { max-height:420px; margin-top:16px; }
+table { width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; }
+th,td { padding:12px; border-bottom:1px solid var(--grid-line); text-align:left; }
+thead th { background:var(--surface-soft); color:var(--text-secondary); font-weight:500; white-space:nowrap; }
+tbody th { white-space:nowrap; }
+tbody tr:hover { background:var(--surface-soft); }
+.data-panel summary { display:flex; align-items:center; gap:12px; }
+.data-panel summary::before { content:"+"; color:var(--action-primary); }
+.data-panel[open] summary::before { content:"−"; }
+.data-panel .small-label { margin-left:auto; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 24px 24px; }
+.metric { padding:20px; background:var(--surface-soft); border-radius:12px; }
+.metric p { margin:0 0 8px; color:var(--text-secondary); font-size:13px; }
+.metric strong { font:500 30px var(--font-mono); }
+.metric > span { display:block; font-size:11px; color:var(--text-secondary); margin-top:4px; }
+.error,.note { margin:16px; padding:14px 18px; border:1px solid currentColor; border-radius:8px; font-size:13px; }
+.error { color:var(--error-text); background:var(--error-surface); }
+.note { color:var(--success-text); background:var(--success-surface); }
+.empty-state { padding:32px; }
+.app-footer { max-width:1408px; margin:0 auto; padding:24px; display:flex; justify-content:space-between; align-items:baseline; gap:20px; font-size:12px; color:var(--text-secondary); }
+.formula-note { max-width:85ch; }
+.htmx-indicator { visibility:hidden; color:var(--text-secondary); font-size:12px; }
+.htmx-request.htmx-indicator { visibility:visible; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.skip-link { position:absolute; top:-100px; left:16px; background:var(--surface-panel); padding:12px; z-index:10; }
+.skip-link:focus { top:12px; }
+@media(max-width:1000px) {
+ .workspace { grid-template-columns:minmax(0,1fr); }
+ .workspace:not(.experiment-workspace) .inspector-content { display:grid; grid-template-columns:1.5fr 1fr; gap:24px; }
+ .app-header { gap:24px; }
+}
+@media(max-width:700px) {
+ .app-header { flex-wrap:wrap; padding:16px; gap:12px; }
+ .app-header nav { order:3; width:100%; gap:24px; }
+ .app-header nav a { padding:8px 0; }
+ .brand { font-size:18px; }
+ .page-heading { padding:28px 16px 24px; flex-wrap:wrap; }
+ .model-badge { font-size:12px; padding:8px 12px; }
+ .workspace { padding:0 12px; gap:16px; }
+ .experiment-workspace .inspector-content,.workspace:not(.experiment-workspace) .inspector-content { display:grid; grid-template-columns:minmax(0,1fr); gap:24px; padding:20px; }
+ .control-panel { border-left:0; padding-left:0; padding-top:24px; border-top:1px solid var(--border-default); }
+ .file-panel form,.preview-grid { grid-template-columns:minmax(0,1fr); }
+ .preview-grid > figure+figure { border-left:0; border-top:1px solid var(--border-default); }
+ .parameter-content { grid-template-columns:1fr; }
+ .summary-strip { padding:16px; gap:12px 20px; }
+ .summary-strip strong { font-size:13px; }
+ .main-plot,.table-panel,.data-panel,.result-heading { padding:20px 16px; }
+ .plot-workspace { padding:0 16px 20px; }
+ .plot-toolbar > .small-label { display:none; }
+ .plot-tabs button { padding:12px 8px; }
+ .comparison-grid { gap:10px; padding:0 16px 20px; }
+ .metric { padding:14px; }
+ .metric strong { font-size:24px; }
+ .tick,.axis { font-size:18px; }
+ .app-footer { flex-wrap:wrap; padding:20px 16px; }
+ #progress { display:none; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } }
+</style></head>
+<body hx-target="#opsview">
+<a class="skip-link" href="#main">К содержимому</a><header class="app-header"><a class="brand" href="/" aria-label="Lognormal Lab, главная"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 19h18M4 16c2 0 3-11 6-11s3 11 10 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg><span><span>Lognormal / Lab</span></span></a><nav aria-label="Разделы лаборатории"><a href="/">Эксперимент</a><a href="/ops" class="on" aria-current="page">Операции</a></nav><div class="header-actions"><span id="progress" class="htmx-indicator" role="status">Вычисляем…</span><button type="button" id="theme-toggle" class="theme-button" aria-label="Тёмная тема" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg></button></div></header>
+<div class="page-heading"><div><p class="eyebrow">Вычислительная лаборатория / 02</p><h1>Арифметика неопределённости</h1><p class="intro">Два логнормальных операнда. Результат — универсальная нечёткая величина.</p></div><span class="model-badge">Принцип обобщения</span></div>
+<main id="main" class="workspace">
+<aside aria-label="Параметры арифметики"><details class="inspector" open=""><summary class="inspector-title">Параметры операции</summary><div class="inspector-content"><form id="ops-form" class="panel" hx-get="/ops/calc" hx-trigger="submit" hx-sync="this:replace" hx-indicator="#progress">
+<div class="panel-heading"><h2>Параметры A и B</h2></div>
+<fieldset><legend><span class="series-label k0">A</span> Первая величина</legend><div class="row"><label>μ<input type="number" name="mu1" step="any" value="0" required="" style=""></label><label>σ<input type="number" name="sigma1" step="any" min="0" value="0.3" required="" style=""></label></div></fieldset>
+<fieldset><legend><span class="series-label k1">B</span> Вторая величина</legend><div class="row"><label>μ<input type="number" name="mu2" step="any" value="0.7" required="" style=""></label><label>σ<input type="number" name="sigma2" step="any" min="0" value="0.4" required="" style=""></label></div></fieldset>
+<label>Операция<select name="op"><option value="add" selected="">+ Сложение</option><option value="sub">− Вычитание</option><option value="mul">× Умножение</option><option value="div">÷ Деление</option></select></label>
+<p class="help">μ может быть отрицательным. σ всегда больше нуля. Результат хранится как набор α-срезов.</p>
+<button class="button primary" type="submit">Рассчитать</button>
+</form><details class="model-note"><summary>Как выполняются операции</summary><p>Арифметика выполняется над α-срезами. Результат может иметь другую форму, чем исходные величины.</p><p>Pos: возможность A ≥ B. Nec: необходимость A ≥ B.</p></details></div></details></aside>
+<section id="opsview" class="results" aria-label="Результат операции" aria-live="polite">
+
+
+<figure class="panel plot-panel main-plot"><div class="panel-heading"><div><h2>Функции принадлежности</h2></div><span class="small-label">μ(x) ∈ [0, 1]</span></div><svg viewBox="0 0 640 320" role="img" aria-label="Функции принадлежности A, B и результата операции">
+  <line class="grid" x1="44.0" x2="44.0" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="44.0" y="286.0" dy="16" text-anchor="middle">-0.378</text><line class="grid" x1="140.7" x2="140.7" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="140.7" y="286.0" dy="16" text-anchor="middle">1.93</text><line class="grid" x1="237.3" x2="237.3" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="237.3" y="286.0" dy="16" text-anchor="middle">4.25</text><line class="grid" x1="334.0" x2="334.0" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="334.0" y="286.0" dy="16" text-anchor="middle">6.56</text><line class="grid" x1="430.7" x2="430.7" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="430.7" y="286.0" dy="16" text-anchor="middle">8.87</text><line class="grid" x1="527.3" x2="527.3" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="527.3" y="286.0" dy="16" text-anchor="middle">11.2</text><line class="grid" x1="624.0" x2="624.0" y1="12.0" y2="286.0"></line>
+  <text class="tick" x="624.0" y="286.0" dy="16" text-anchor="middle">13.5</text>
+  <line class="grid" x1="44.0" x2="624.0" y1="286.0" y2="286.0"></line>
+  <text class="tick" x="44.0" y="286.0" dx="-6" dy="4" text-anchor="end">0</text><line class="grid" x1="44.0" x2="624.0" y1="231.2" y2="231.2"></line>
+  <text class="tick" x="44.0" y="231.2" dx="-6" dy="4" text-anchor="end">0.2</text><line class="grid" x1="44.0" x2="624.0" y1="176.4" y2="176.4"></line>
+  <text class="tick" x="44.0" y="176.4" dx="-6" dy="4" text-anchor="end">0.4</text><line class="grid" x1="44.0" x2="624.0" y1="121.6" y2="121.6"></line>
+  <text class="tick" x="44.0" y="121.6" dx="-6" dy="4" text-anchor="end">0.6</text><line class="grid" x1="44.0" x2="624.0" y1="66.8" y2="66.8"></line>
+  <text class="tick" x="44.0" y="66.8" dx="-6" dy="4" text-anchor="end">0.8</text><line class="grid" x1="44.0" x2="624.0" y1="12.0" y2="12.0"></line>
+  <text class="tick" x="44.0" y="12.0" dx="-6" dy="4" text-anchor="end">1</text>
+  
+  <polygon class="poly k0" points="70.36,286.00 76.74,279.15 78.16,272.30 79.13,265.45 79.89,258.60 80.55,251.75 81.12,244.90 81.64,238.05 82.13,231.20 82.58,224.35 83.01,217.50 83.42,210.65 83.81,203.80 84.19,196.95 84.56,190.10 84.92,183.25 85.28,176.40 85.63,169.55 85.97,162.70 86.32,155.85 86.66,149.00 87.00,142.15 87.34,135.30 87.69,128.45 88.04,121.60 88.39,114.75 88.74,107.90 89.11,101.05 89.48,94.20 89.86,87.35 90.25,80.50 90.66,73.65 91.09,66.80 91.54,59.95 92.02,53.10 92.54,46.25 93.11,39.40 93.76,32.55 94.53,25.70 95.53,18.85 98.03,12.00 100.70,18.85 101.88,25.70 102.83,32.55 103.67,39.40 104.44,46.25 105.16,53.10 105.84,59.95 106.51,66.80 107.16,73.65 107.79,80.50 108.42,87.35 109.05,94.20 109.67,101.05 110.30,107.90 110.93,114.75 111.56,121.60 112.21,128.45 112.86,135.30 113.53,142.15 114.21,149.00 114.92,155.85 115.64,162.70 116.39,169.55 117.17,176.40 117.98,183.25 118.83,190.10 119.73,196.95 120.68,203.80 121.69,210.65 122.78,217.50 123.97,224.35 125.27,231.20 126.71,238.05 128.35,244.90 130.26,251.75 132.55,258.60 135.44,265.45 139.43,272.30 146.09,279.15 198.29,286.00 "><title>A</title></polygon><polygon class="poly k1" points="72.71,286.00 84.04,279.15 86.78,272.30 88.69,265.45 90.23,258.60 91.56,251.75 92.74,244.90 93.82,238.05 94.83,231.20 95.77,224.35 96.68,217.50 97.55,210.65 98.39,203.80 99.21,196.95 100.01,190.10 100.79,183.25 101.57,176.40 102.33,169.55 103.10,162.70 103.86,155.85 104.62,149.00 105.38,142.15 106.15,135.30 106.92,128.45 107.70,121.60 108.50,114.75 109.31,107.90 110.14,101.05 110.99,94.20 111.87,87.35 112.79,80.50 113.74,73.65 114.74,66.80 115.80,59.95 116.93,53.10 118.16,46.25 119.53,39.40 121.08,32.55 122.93,25.70 125.39,18.85 131.56,12.00 138.32,18.85 141.37,25.70 143.84,32.55 146.02,39.40 148.03,46.25 149.94,53.10 151.76,59.95 153.54,66.80 155.27,73.65 156.99,80.50 158.69,87.35 160.39,94.20 162.10,101.05 163.81,107.90 165.55,114.75 167.30,121.60 169.09,128.45 170.92,135.30 172.79,142.15 174.71,149.00 176.70,155.85 178.75,162.70 180.88,169.55 183.11,176.40 185.44,183.25 187.90,190.10 190.50,196.95 193.27,203.80 196.24,210.65 199.46,217.50 202.97,224.35 206.85,231.20 211.20,238.05 216.17,244.90 221.99,251.75 229.05,258.60 238.09,265.45 250.74,272.30 272.33,279.15 459.17,286.00 "><title>B</title></polygon><polygon class="poly k2" points="83.25,286.00 100.96,279.15 105.12,272.30 108.00,265.45 110.31,258.60 112.28,251.75 114.04,244.90 115.64,238.05 117.13,231.20 118.53,224.35 119.87,217.50 121.14,210.65 122.38,203.80 123.58,196.95 124.75,190.10 125.89,183.25 127.02,176.40 128.14,169.55 129.25,162.70 130.35,155.85 131.46,149.00 132.56,142.15 133.67,135.30 134.79,128.45 135.92,121.60 137.07,114.75 138.23,107.90 139.43,101.05 140.65,94.20 141.91,87.35 143.22,80.50 144.58,73.65 146.01,66.80 147.52,59.95 149.14,53.10 150.89,46.25 152.82,39.40 155.02,32.55 157.64,25.70 161.10,18.85 169.77,12.00 179.19,18.85 183.43,25.70 186.85,32.55 189.87,39.40 192.65,46.25 195.27,53.10 197.78,59.95 200.22,66.80 202.61,73.65 204.96,80.50 207.29,87.35 209.62,94.20 211.95,101.05 214.29,107.90 216.65,114.75 219.05,121.60 221.48,128.45 223.96,135.30 226.50,142.15 229.11,149.00 231.79,155.85 234.57,162.70 237.45,169.55 240.45,176.40 243.60,183.25 246.91,190.10 250.40,196.95 254.13,203.80 258.11,210.65 262.42,217.50 267.11,224.35 272.29,231.20 278.09,238.05 284.70,244.90 292.43,251.75 301.78,258.60 313.71,265.45 330.35,272.30 358.60,279.15 597.64,286.00 "><title>A + B</title></polygon>
+  
+  
+  <text class="axis" x="624.0" y="286.0" dy="30" text-anchor="end">x</text>
+  <text class="axis" x="44.0" y="12.0" dx="4" dy="10">μ</text>
+</svg><figcaption>Сплошная: A · пунктирная: B · штрихпунктирная: результат. Хвосты отсечены при ε = 10⁻⁴.</figcaption></figure>
+<div class="comparison-grid"><article class="panel metric"><p>Возможность A ≥ B</p><strong>0.667</strong><span>Pos · от 0 до 1</span></article><article class="panel metric"><p>Необходимость A ≥ B</p><strong>0.000</strong><span>Nec · от 0 до 1</span></article></div>
+<section class="panel table-panel"><div class="panel-heading"><div><h2>Параметры A и B и результат</h2></div></div><div class="table-scroll"><table><caption class="sr-only">Носители и характеристики нечётких величин</caption><thead><tr><th scope="col">Величина</th><th scope="col">Рабочий носитель</th><th scope="col">Центр тяжести</th><th scope="col">Среднее*</th><th scope="col">Дисперсия*</th></tr></thead><tbody><tr><th scope="row"><i class="swatch k0" aria-hidden="true"></i>A</th><td class="mono">[0.25; 3.31]</td><td class="mono">1.049</td><td class="mono">0.9557</td><td class="mono">0.07983</td></tr><tr><th scope="row"><i class="swatch k1" aria-hidden="true"></i>B</th><td class="mono">[0.31; 9.55]</td><td class="mono">2.196</td><td class="mono">1.857</td><td class="mono">0.5246</td></tr><tr><th scope="row"><i class="swatch k2" aria-hidden="true"></i>A + B</th><td class="mono">[0.56; 12.86]</td><td class="mono">3.244</td><td class="mono">2.813</td><td class="mono">1.014</td></tr></tbody></table></div><p class="help">* Возможностные среднее и дисперсия нечёткой величины. Вычисляются численно, это не моменты исходного распределения.</p></section>
+</section>
+</main><footer class="app-footer"><details><summary>Справка: модель и точность</summary><div class="formula-note"><p>Логнормальная плотность нормирована по максимуму: g(x) = exp(−(ln x − μ + σ²)² / (2σ²)), x &gt; 0. Для конечного носителя используем μ̃(x) = max(0, (g(x) − ε)/(1 − ε)), ε = 10⁻⁴.</p><p>α-срез: [exp(μ − σ² − σ√(−2 ln β)), exp(μ − σ² + σ√(−2 ln β))], β = ε + (1 − ε)α. При α = 1 остаётся мода exp(μ − σ²).</p><p>Арифметика и интегральные характеристики используют 200 шагов по α. ε задаёт уровень относительной плотности, а не вероятность хвоста. Сумма и разность обычно не являются логнормальными величинами.</p></div></details><span>Логнормальная модель · воспроизводимые расчёты</span></footer></body></html>

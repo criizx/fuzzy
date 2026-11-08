@@ -1,0 +1,33 @@
+{{define "view"}}
+{{if .Error}}<p class="error" role="alert"><strong>Проверьте параметры.</strong> {{.Error}}</p>{{end}}
+{{if .Message}}<p class="note" role="status">{{.Message}}</p>{{end}}
+{{if or .Preview .Clusters}}
+<div class="summary-strip"><div><span>Объектов</span><strong>{{.Count}}</strong></div>{{if .Clusters}}<div><span>Кластеров</span><strong>{{len .Clusters}}</strong></div>{{end}}{{if not .Preview}}<div><span>α</span><strong>{{printf "%.2f" .Alpha}}</strong></div>{{end}}<div><span>Seed</span><strong>{{.Seed}}</strong></div><div><span>Набор</span><strong>#{{.Revision}}</strong></div></div>
+{{if .Preview}}
+<div class="result-heading"><span class="step-number">03</span><div><h2>Предварительный просмотр</h2><p class="help">Набор готов. Для разбиения нажмите «Запустить кластеризацию». Графики показывают первые три величины, таблица — весь набор.</p></div></div>
+<div class="preview-grid"><figure class="panel main-plot"><h2>Вероятностная модель · f(x)</h2>{{template "chart" .Density}}<figcaption>Исходная плотность. Её максимум может превышать 1; показано рабочее окно, а не весь бесконечный носитель.</figcaption></figure><figure class="panel main-plot"><h2>Нечёткая модель · μ̃(x)</h2>{{template "chart" .Membership}}<figcaption>Нормирование по максимуму и отсечение при ε = 10⁻⁴. Высота каждой функции равна 1.</figcaption></figure></div>
+{{else}}
+<div class="result-heading"><span class="step-number">03</span><div><h2>Результат эксперимента</h2><p class="help">Переключение вида графика не запускает повторный расчёт.</p></div></div>
+<section class="plot-workspace" aria-label="Графики кластеризации">
+<div class="plot-toolbar"><div class="plot-tabs" role="tablist" aria-label="Вид графика"><button type="button" id="tab-cuts" role="tab" aria-selected="true" aria-controls="plot-cuts" data-plot="cuts">α-срезы</button><button type="button" id="tab-plane" role="tab" aria-selected="false" aria-controls="plot-plane" tabindex="-1" data-plot="plane">Плоскость границ</button></div><span class="small-label">{{.Count}} величин</span></div>
+<div id="plot-cuts" role="tabpanel" aria-labelledby="tab-cuts" tabindex="0"><figure>{{template "chart" .Cuts}}<figcaption>Интервалы сгруппированы по кластерам. Наведите на интервал, чтобы посмотреть границы.</figcaption></figure></div>
+<div id="plot-plane" role="tabpanel" aria-labelledby="tab-plane" tabindex="0" hidden><figure>{{template "chart" .Plane}}<figcaption>Координаты точки: нижняя и верхняя границы α-среза. Медоиды выделены обводкой.</figcaption></figure></div>
+</section>
+<section class="panel table-panel"><div class="panel-heading"><div><h2>Результаты кластеризации</h2></div><span class="small-label">{{len .Clusters}} кластеров</span></div><div class="table-scroll"><table><caption class="sr-only">Размеры кластеров и параметры медоидов</caption><thead><tr><th scope="col">Кластер</th><th scope="col">Величин</th><th scope="col">Медоид · рабочий носитель</th></tr></thead><tbody>{{range .Clusters}}<tr><th scope="row"><i class="swatch k{{.Class}}" aria-hidden="true"></i>Кластер {{.Num}}</th><td class="mono">{{.Size}}</td><td class="mono">{{.Medoid}}</td></tr>{{end}}</tbody></table></div></section>
+{{end}}
+<details class="panel data-panel"><summary>Данные и вероятностные характеристики <span class="small-label">{{.Count}} строк</span></summary><div class="table-scroll data-scroll"><table><caption class="sr-only">Параметры, интервалы и вероятностные характеристики исходных величин</caption><thead><tr><th scope="col">№</th><th scope="col">Параметры</th><th scope="col">Кластер</th><th scope="col">Нижняя граница</th><th scope="col">Верхняя граница</th><th scope="col">Мода</th><th scope="col">Медиана</th><th scope="col">E[X]</th><th scope="col">Var[X]</th></tr></thead><tbody>{{range .Data}}<tr><th scope="row">{{.Index}}</th><td class="mono">{{.Params}}</td><td>{{if .Cluster}}{{.Cluster}}{{else}}—{{end}}</td><td class="mono">{{printf "%.5g" .Lo}}</td><td class="mono">{{printf "%.5g" .Hi}}</td><td class="mono">{{printf "%.5g" .Mode}}</td><td class="mono">{{printf "%.5g" .Median}}</td><td class="mono">{{printf "%.5g" .Expected}}</td><td class="mono">{{printf "%.5g" .Variance}}</td></tr>{{end}}</tbody></table></div></details>
+{{else}}<div class="panel empty-state"><h2>Нет результата</h2><p>Проверьте параметры и сгенерируйте набор.</p></div>{{end}}
+{{end}}
+
+{{define "chart"}}<svg viewBox="0 0 {{.W}} {{.H}}" role="img" aria-label="{{.Title}}">
+  {{range .XTicks}}<line class="grid" x1="{{f .Pos}}" x2="{{f .Pos}}" y1="{{f $.Top}}" y2="{{f $.Base}}"/>
+  <text class="tick" x="{{f .Pos}}" y="{{f $.Base}}" dy="16" text-anchor="middle">{{.Label}}</text>{{end}}
+  {{range .YTicks}}<line class="grid" x1="{{f $.Left}}" x2="{{f $.End}}" y1="{{f .Pos}}" y2="{{f .Pos}}"/>
+  <text class="tick" x="{{f $.Left}}" y="{{f .Pos}}" dx="-6" dy="4" text-anchor="end">{{.Label}}</text>{{end}}
+  {{if .Diag}}<line class="diag" x1="{{f .Left}}" y1="{{f .Base}}" x2="{{f .End}}" y2="{{f .Top}}"/>{{end}}
+  {{range .Polys}}<polygon class="poly k{{.Class}}" points="{{.Points}}"><title>{{.Name}}</title></polygon>{{end}}
+  {{range .Bars}}<rect id="{{.ID}}" class="bar k{{.Class}}" x="{{f .X}}" y="{{f .Y}}" width="{{f .W}}" height="{{f .H}}"><title>{{.Tip}}</title></rect>{{end}}
+  {{range .Dots}}<circle id="{{.ID}}" class="dot k{{.Class}}{{if .Medoid}} medoid{{end}}" cx="{{f .X}}" cy="{{f .Y}}" r="{{if .Medoid}}7{{else}}3.5{{end}}"><title>{{.Tip}}</title></circle>{{end}}
+  <text class="axis" x="{{f .End}}" y="{{f .Base}}" dy="30" text-anchor="end">{{.XLabel}}</text>
+  {{if .YLabel}}<text class="axis" x="{{f .Left}}" y="{{f .Top}}" dx="4" dy="10">{{.YLabel}}</text>{{end}}
+</svg>{{end}}
