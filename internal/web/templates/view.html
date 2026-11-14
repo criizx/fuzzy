@@ -24,7 +24,7 @@
   <text class="tick" x="{{f .Pos}}" y="{{f $.Base}}" dy="16" text-anchor="middle">{{.Label}}</text>{{end}}
   {{range .YTicks}}<line class="grid" x1="{{f $.Left}}" x2="{{f $.End}}" y1="{{f .Pos}}" y2="{{f .Pos}}"/>
   <text class="tick" x="{{f $.Left}}" y="{{f .Pos}}" dx="-6" dy="4" text-anchor="end">{{.Label}}</text>{{end}}
-  {{if .Diag}}<line class="diag" x1="{{f .Left}}" y1="{{f .Base}}" x2="{{f .End}}" y2="{{f .Top}}"/>{{end}}
+  {{if .Diag}}<line class="diag" x1="{{f .Diag.X1}}" y1="{{f .Diag.Y1}}" x2="{{f .Diag.X2}}" y2="{{f .Diag.Y2}}"/>{{end}}
   {{range .Polys}}<polygon class="poly k{{.Class}}" points="{{.Points}}"><title>{{.Name}}</title></polygon>{{end}}
   {{range .Bars}}<rect id="{{.ID}}" class="bar k{{.Class}}" x="{{f .X}}" y="{{f .Y}}" width="{{f .W}}" height="{{f .H}}"><title>{{.Tip}}</title></rect>{{end}}
   {{range .Dots}}<circle id="{{.ID}}" class="dot k{{.Class}}{{if .Medoid}} medoid{{end}}" cx="{{f .X}}" cy="{{f .Y}}" r="{{if .Medoid}}7{{else}}3.5{{end}}"><title>{{.Tip}}</title></circle>{{end}}

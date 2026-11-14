@@ -69,6 +69,10 @@ type poly struct {
 	Name   string
 }
 
+type segment struct {
+	X1, Y1, X2, Y2 float64
+}
+
 // chart stores presentation-only SVG geometry.
 type chart struct {
 	Title                    string
@@ -78,7 +82,7 @@ type chart struct {
 	Bars                     []bar
 	Dots                     []dot
 	Polys                    []poly
-	Diag                     bool
+	Diag                     *segment
 	XLabel, YLabel           string
 }
 
@@ -117,13 +121,14 @@ func (s *Server) buildView(c ctl) viewModel {
 		v.Seed = strconv.FormatInt(run.Dataset.Generation.Seed, 10)
 	}
 	cuts := make([]fuzzy.Interval, len(items))
-	dom := items[0].Support()
 	for i, it := range items {
 		cuts[i] = fuzzy.CutClamped(it, c.Alpha)
-		dom = dom.Hull(it.Support())
 	}
-	pad := (dom.Hi - dom.Lo) * 0.03
-	dom = fuzzy.Interval{Lo: dom.Lo - pad, Hi: dom.Hi + pad}
+	dom := cuts[0]
+	for _, cut := range cuts[1:] {
+		dom = dom.Hull(cut)
+	}
+	dom = paddedDomain(dom)
 
 	for i, it := range items {
 		row := dataRow{Index: i + 1, Cluster: res.Labels[i] + 1, Params: fmt.Sprint(it), Lo: cuts[i].Lo, Hi: cuts[i].Hi}
@@ -135,8 +140,17 @@ func (s *Server) buildView(c ctl) viewModel {
 	}
 	v.Clusters = clusterRows(items, res)
 	v.Cuts = cutsChart(items, cuts, res, dom)
-	v.Plane = planeChart(items, cuts, res, dom)
+	v.Plane = planeChart(items, cuts, res)
 	return v
+}
+
+func paddedDomain(dom fuzzy.Interval) fuzzy.Interval {
+	pad := (dom.Hi - dom.Lo) * 0.03
+	if pad == 0 {
+		// Identical point cuts still need a nonzero axis range.
+		pad = math.Max(math.Abs(dom.Lo), 1) * 0.03
+	}
+	return fuzzy.Interval{Lo: dom.Lo - pad, Hi: dom.Hi + pad}
 }
 
 func clusterRows(items []fuzzy.Number, res clustering.Result) []clusterRow {
@@ -185,10 +199,22 @@ func cutsChart(items []fuzzy.Number, cuts []fuzzy.Interval, res clustering.Resul
 }
 
 // planeChart maps each alpha cut to (Lo,Hi), highlighting the medoids.
-func planeChart(items []fuzzy.Number, cuts []fuzzy.Interval, res clustering.Result, dom fuzzy.Interval) chart {
-	ch := chart{Title: "Карта нижних и верхних границ α-срезов; крупные точки — медоиды", W: 420, H: 380, Left: 44, Right: 16, Top: 12, Bottom: 34, Diag: true, XLabel: "нижняя граница среза", YLabel: "верхняя"}
-	x := scale{dom.Lo, dom.Hi, ch.Left, float64(ch.W) - ch.Right}
-	y := scale{dom.Lo, dom.Hi, float64(ch.H) - ch.Bottom, ch.Top}
+func planeChart(items []fuzzy.Number, cuts []fuzzy.Interval, res clustering.Result) chart {
+	ch := chart{Title: "Карта нижних и верхних границ α-срезов; крупные точки — медоиды; масштабы осей независимы", W: 420, H: 380, Left: 44, Right: 16, Top: 12, Bottom: 34, XLabel: "нижняя граница среза", YLabel: "верхняя"}
+	xdom := fuzzy.Interval{Lo: cuts[0].Lo, Hi: cuts[0].Lo}
+	ydom := fuzzy.Interval{Lo: cuts[0].Hi, Hi: cuts[0].Hi}
+	for _, cut := range cuts[1:] {
+		xdom.Lo, xdom.Hi = math.Min(xdom.Lo, cut.Lo), math.Max(xdom.Hi, cut.Lo)
+		ydom.Lo, ydom.Hi = math.Min(ydom.Lo, cut.Hi), math.Max(ydom.Hi, cut.Hi)
+	}
+	xdom, ydom = paddedDomain(xdom), paddedDomain(ydom)
+	x := scale{xdom.Lo, xdom.Hi, ch.Left, float64(ch.W) - ch.Right}
+	y := scale{ydom.Lo, ydom.Hi, float64(ch.H) - ch.Bottom, ch.Top}
+	// Draw y=x only where its values lie within both visible axis ranges.
+	lo, hi := math.Max(xdom.Lo, ydom.Lo), math.Min(xdom.Hi, ydom.Hi)
+	if lo < hi {
+		ch.Diag = &segment{X1: x.at(lo), Y1: y.at(lo), X2: x.at(hi), Y2: y.at(hi)}
+	}
 	isMedoid := map[int]bool{}
 	for _, m := range res.Medoids {
 		isMedoid[m] = true
