@@ -4,3 +4,14 @@ data/*.csv
 
 .DS_Store
 node_modules/
+
+# LaTeX build intermediates
+latex/*.aux
+latex/*.log
+latex/*.out
+latex/*.toc
+latex/*.synctex.gz
+latex/*.xdv
+latex/*.fls
+latex/*.fdb_latexmk
+/latex-report.zip
